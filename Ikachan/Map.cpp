@@ -76,16 +76,117 @@ void PutBack(FRAME *frame)
 #define MAP_WIDTH ((SURFACE_WIDTH + 15) / 16 + 1)
 #define MAP_HEIGHT ((SURFACE_HEIGHT + 15) / 16 + 1)
 
-RECT rcParts[8] = {
-	{   0, 0,  16, 16},
-	{  16, 0,  32, 16},
-	{  32, 0,  48, 16},
-	{  48, 0,  64, 16},
-	{  64, 0,  80, 16},
-	{  80, 0,  96, 16},
-	{  96, 0, 112, 16},
-	{ 112, 0, 128, 16},
+RECT rcParts[80] = {
+	{   0,  0,  16, 16},
+	{  16,  0,  32, 16},
+	{  32,  0,  48, 16},
+	{  48,  0,  64, 16},
+	{  64,  0,  80, 16},
+	{  80,  0,  96, 16},
+	{  96,  0, 112, 16},
+	{ 112,  0, 128, 16},
+	{   0,  16,  16, 32},
+	{  16,  16,  32, 32},
+	{  32,  16,  48, 32},
+	{  48,  16,  64, 32},
+	{  64,  16,  80, 32},
+	{  80,  16,  96, 32},
+	{  96,  16, 112, 32},
+	{ 112,  16, 128, 32},
+	{   0,  32,  16, 48},
+	{  16,  32,  32, 48},
+	{  32,  32,  48, 48},
+	{  48,  32,  64, 48},
+	{  64,  32,  80, 48},
+	{  80,  32,  96, 48},
+	{  96,  32, 112, 48},
+	{ 112,  32, 128, 48},
+	{   0,  48,  16, 64},
+	{  16,  48,  32, 64},
+	{  32,  48,  48, 64},
+	{  48,  48,  64, 64},
+	{  64,  48,  80, 64},
+	{  80,  48,  96, 64},
+	{  96,  48, 112, 64},
+	{ 112,  48, 128, 64},
+	{   0,  64,  16, 80},
+	{  16,  64,  32, 80},
+	{  32,  64,  48, 80},
+	{  48,  64,  64, 80},
+	{  64,  64,  80, 80},
+	{  80,  64,  96, 80},
+	{  96,  64, 112, 80},
+	{ 112,  64, 128, 80},
+	{   0,  80,  16, 96},
+	{  16,  80,  32, 96},
+	{  32,  80,  48, 96},
+	{  48,  80,  64, 96},
+	{  64,  80,  80, 96},
+	{  80,  80,  96, 96},
+	{  96,  80, 112, 96},
+	{ 112,  80, 128, 96},
+	{   0,  96,  16, 112},
+	{  16,  96,  32, 112},
+	{  32,  96,  48, 112},
+	{  48,  96,  64, 112},
+	{  64,  96,  80, 112},
+	{  80,  96,  96, 112},
+	{  96,  96, 112, 112},
+	{ 112,  96, 128, 112},
+	{   0, 112,  16, 128},
+	{  16, 112,  32, 128},
+	{  32, 112,  48, 128},
+	{  48, 112,  64, 128},
+	{  64, 112,  80, 128},
+	{  80, 112,  96, 128},
+	{  96, 112, 112, 128},
+	{ 112, 112, 128, 128},
+	{   0, 128,  16, 144},
+	{  16, 128,  32, 144},
+	{  32, 128,  48, 144},
+	{  48, 128,  64, 144},
+	{  64, 128,  80, 144},
+	{  80, 128,  96, 144},
+	{  96, 128, 112, 144},
+	{ 112, 128, 128, 144},
+	{   0, 144,  16, 160},
+	{  16, 144,  32, 160},
+	{  32, 144,  48, 160},
+	{  48, 144,  64, 160},
+	{  64, 144,  80, 160},
+	{  80, 144,  96, 160},
+	{  96, 144, 112, 160},
+	{ 112, 144, 128, 160},
 };
+
+int[2] ColourIndexToTileset(BYTE tile)
+{
+	switch((tile >> 4)) {
+		case 15: // PRTDMG
+		case 14: // PRTDMG
+			return {5,tile&32};
+		case 13: // PRTFILT
+		case 12: // PRTFILT
+		case 11: // PRTFILT
+		case 10: // PRTFILT
+		case 9: // PRTFILT
+			return {1,tile&128};
+		case 8: // PRTBLOCK
+		case 7: // PRTBLOCK
+		case 6: // PRTBLOCK
+		case 5: // PRTBLOCK
+			return {4,tile&64};
+		case 3: // PRTSNACK
+			return {7,tile&16};
+		case 2: // PRTDIR
+			return {3,tile&16};
+		case 1: // PRTITEM
+			return {2,tile&16};
+		default: // PRTBACK
+			return {0,0};
+	}
+	return {0,0};
+}
 
 void PutMapBack(MAP *map, int fx, int fy)
 {
@@ -96,20 +197,15 @@ void PutMapBack(MAP *map, int fx, int fy)
 		{
 			//Check if this is a back tile
 			BYTE tile = map->data[x + map->width * y];
-			if (tile != 0 && (
-				(tile >> 5) == 0 ||
-				(tile >> 5) == 2 ||
-				(tile >> 5) == 4 ||
-				(tile >> 5) == 5 ||
-				(tile >> 5) == 7
-				))
+			int[2] tileindices=ColourIndexToTileset(tile);
+			if(tileindices[0] > 1)
 			{
 				//Draw tile
 				PutBitmap3(&grcFull,
 					(x * 16) - (fx / 0x400),
 					(y * 16) - (fy / 0x400),
-					&rcParts[tile % 32],
-					SURFACE_ID_PRTBACK + (tile >> 5));
+					&rcParts[tileindices[1]],
+					SURFACE_ID_PRTBACK + tileindices[0]);
 			}
 		}
 	}
@@ -124,14 +220,15 @@ void PutMapFront(MAP *map, int fx, int fy)
 		{
 			//Check if this is a front tile
 			BYTE tile = map->data[x + map->width * y];
-			if (tile != 0 && (tile >> 5) == 1)
+			int[2] tileindices=ColourIndexToTileset(tile);
+			if (tileindices[0] == 1)
 			{
 				//Draw tile
 				PutBitmap3(&grcFull,
 					(x * 16) - (fx / 0x400),
 					(y * 16) - (fy / 0x400),
-					&rcParts[tile % 32],
-					SURFACE_ID_PRTBACK + (tile >> 5));
+					&rcParts[tileindices[1]],
+					SURFACE_ID_PRTBACK + tileindices[0]);
 			}
 		}
 	}
@@ -177,13 +274,14 @@ void PutMapVector(MAP *map, int fx, int fy)
 		for (int x = (fx / 0x400) / 16; x < ((fx / 0x400) / 16 + MAP_WIDTH); x++)
 		{
 			BYTE tile = map->data[x + map->width * y];
-			if (tile != 0 && (tile >> 5) == 3)
+			int[2] tileindices=ColourIndexToTileset(tile);
+			if (tileindices[0] == 3)
 			{
 				PutBitmap3(&grcFull,
 					(x * 16) - (fx / 0x400),
 					(y * 16) - (fy / 0x400),
-					&rect[tile % 32],
-					SURFACE_ID_PRTBACK + (tile >> 5));
+					&rect[tileindices[1]],
+					SURFACE_ID_PRTBACK + tileindices[0]);
 			}
 		}
 	}
