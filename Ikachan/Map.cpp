@@ -159,33 +159,45 @@ RECT rcParts[80] = {
 	{ 112, 144, 128, 160},
 };
 
-int[2] ColourIndexToTileset(BYTE tile)
+void ColourIndexToTileset(int* tileindices, BYTE tile)
 {
 	switch((tile >> 4)) {
 		case 15: // PRTDMG
 		case 14: // PRTDMG
-			return {5,tile&32};
+			tileindices[0]=5;
+			tileindices[1]=tile&32;
+			break;
 		case 13: // PRTFILT
 		case 12: // PRTFILT
 		case 11: // PRTFILT
 		case 10: // PRTFILT
 		case 9: // PRTFILT
-			return {1,tile&128};
+			tileindices[0]=1;
+			tileindices[1]=tile&128;
+			break;
 		case 8: // PRTBLOCK
 		case 7: // PRTBLOCK
 		case 6: // PRTBLOCK
 		case 5: // PRTBLOCK
-			return {4,tile&64};
+			tileindices[0]=4;
+			tileindices[1]=tile&64;
+			break;
 		case 3: // PRTSNACK
-			return {7,tile&16};
+			tileindices[0]=7;
+			tileindices[1]=tile&16;
+			break;
 		case 2: // PRTDIR
-			return {3,tile&16};
+			tileindices[0]=3;
+			tileindices[1]=tile&16;
+			break;
 		case 1: // PRTITEM
-			return {2,tile&16};
-		default: // PRTBACK
-			return {0,0};
+			tileindices[0]=2;
+			tileindices[1]=tile&16;
+			break;
+		default:
+			tileindices[0]=0;
+			tileindices[1]=0;
 	}
-	return {0,0};
 }
 
 void PutMapBack(MAP *map, int fx, int fy)
@@ -197,7 +209,8 @@ void PutMapBack(MAP *map, int fx, int fy)
 		{
 			//Check if this is a back tile
 			BYTE tile = map->data[x + map->width * y];
-			int[2] tileindices=ColourIndexToTileset(tile);
+			int tileindices[2]={0,0};
+			ColourIndexToTileset(tileindices,tile);
 			if(tileindices[0] > 1)
 			{
 				//Draw tile
@@ -220,7 +233,8 @@ void PutMapFront(MAP *map, int fx, int fy)
 		{
 			//Check if this is a front tile
 			BYTE tile = map->data[x + map->width * y];
-			int[2] tileindices=ColourIndexToTileset(tile);
+			int tileindices[2]={0,0};
+			ColourIndexToTileset(tileindices,tile);
 			if (tileindices[0] == 1)
 			{
 				//Draw tile
@@ -274,7 +288,8 @@ void PutMapVector(MAP *map, int fx, int fy)
 		for (int x = (fx / 0x400) / 16; x < ((fx / 0x400) / 16 + MAP_WIDTH); x++)
 		{
 			BYTE tile = map->data[x + map->width * y];
-			int[2] tileindices=ColourIndexToTileset(tile);
+			int tileindices[2]={0,0};
+			ColourIndexToTileset(tileindices,tile);
 			if (tileindices[0] == 3)
 			{
 				PutBitmap3(&grcFull,
